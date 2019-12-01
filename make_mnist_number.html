@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>mnist数字作成</title>
+	<meta name="viewport" content="width=device-width,init-scale=1,user-scalable=no,minimum-scale=1,maximum-scale=1">
+	<script>
+		var can;
+		var ct;
+		var ox = 0, oy = 0, x = 0, y = 0;
+		var mf = false;
+
+		function mam_draw_init() {
+			//初期設定
+			can = document.getElementById("can");
+			can.addEventListener("touchstart", onDown, false);
+			can.addEventListener("touchmove", onMove, false);
+			can.addEventListener("touchend", onUp, false);
+			can.addEventListener("mousedown", onMouseDown, false);
+			can.addEventListener("mousemove", onMouseMove, false);
+			can.addEventListener("mouseup", onMouseUp, false);
+			ct = can.getContext("2d");
+			ct.strokeStyle = "#000000";
+			ct.lineWidth = 40;
+			ct.lineJoin = "round";
+			ct.lineCap = "round";
+			clearCan();
+		}
+
+		function onDown(event) {
+			mf = true;
+			ox = event.touches[0].pageX - event.target.getBoundingClientRect().left;
+			oy = event.touches[0].pageY - event.target.getBoundingClientRect().top;
+			event.stopPropagation();
+		}
+
+		function onMove(event) {
+			if (mf) {
+				x = event.touches[0].pageX - event.target.getBoundingClientRect().left;
+				y = event.touches[0].pageY - event.target.getBoundingClientRect().top;
+				drawLine();
+				ox = x;
+				oy = y;
+				event.preventDefault();
+				event.stopPropagation();
+			}
+		}
+
+		function onUp(event) {
+			mf = false;
+			event.stopPropagation();
+		}
+
+		function onMouseDown(event) {
+			ox = event.clientX - event.target.getBoundingClientRect().left;
+			oy = event.clientY - event.target.getBoundingClientRect().top;
+			mf = true;
+		}
+
+		function onMouseMove(event) {
+			if (mf) {
+				x = event.clientX - event.target.getBoundingClientRect().left;
+				y = event.clientY - event.target.getBoundingClientRect().top;
+				drawLine();
+				ox = x;
+				oy = y;
+			}
+		}
+
+		function onMouseUp(event) {
+			mf = false;
+		}
+
+		function drawLine() {
+			ct.beginPath();
+			ct.moveTo(ox, oy);
+			ct.lineTo(x, y);
+			ct.stroke();
+		}
+
+		function clearCan() {
+			ct.fillStyle = "rgb(255,255,255)";
+			ct.fillRect(0, 0, can.getBoundingClientRect().width, can.getBoundingClientRect().height);
+
+			var radios = document.getElementsByName('result');
+			for (var i = 0, length = radios.length; i < length; i++) {
+				if (radios[i].checked) {
+					radios[i].checked = false;
+					break;
+				}
+			}
+		}
+
+		function saveCanvas(canvas_id) {
+			var result = "";
+			var radios = document.getElementsByName('result');
+			for (var i = 0, length = radios.length; i < length; i++) {
+				if (radios[i].checked) {
+					result = radios[i].value;
+					break;
+				}
+			}
+
+			if(!result) {
+				alert('書いた数字を選択してください。')
+				return false;
+			}
+			
+			var timestamp = (new Date()).yyyyMMddhhmmss();
+			var img_name = result + '_' + timestamp + '.jpg';
+
+			var canvas = document.getElementById(canvas_id);
+			if (canvas.msToBlob) { //for IE
+				var blob = canvas.msToBlob();
+				window.navigator.msSaveBlob(blob, img_name);
+			} else {
+				//アンカータグを作成
+				var a = document.createElement('a');
+				a.href = canvas.toDataURL('image/jpeg', 1);
+				a.download = img_name;
+				a.click();
+			}
+		}
+
+		Date.prototype.yyyyMMddhhmmss = function() {
+			var MM = this.getMonth() + 1; // getMonth() is zero-based
+			var dd = this.getDate();
+			var hh = this.getHours();
+			var mm = this.getMinutes();
+			var ss = this.getSeconds();
+
+			return [this.getFullYear(),
+				(MM>9 ? '' : '0') + MM,
+				(dd>9 ? '' : '0') + dd,
+				(hh>9 ? '' : '0') + hh,
+				(mm>9 ? '' : '0') + mm,
+				(ss>9 ? '' : '0') + ss
+			].join('');
+		};
+
+	</script>
+</head>
+
+<body onload="mam_draw_init();" >
+<div style="margin:0 auto;width: 500px;">
+	<h3>mnist数字作成</h3>
+	<div style="border:solid 1px #000000;width:448px;" id="candiv">
+		<canvas id="can" width="448px" height="448px"></canvas>
+		<input type="hidden" name="canvasData" id="my_hidden">
+	</div>
+
+	<p>
+	<input type="radio" name="result" value="0">0
+	<input type="radio" name="result" value="1">1
+	<input type="radio" name="result" value="2">2
+	<input type="radio" name="result" value="3">3
+	<input type="radio" name="result" value="4">4
+	<input type="radio" name="result" value="5">5
+	<input type="radio" name="result" value="6">6
+	<input type="radio" name="result" value="7">7
+	<input type="radio" name="result" value="8">8
+	<input type="radio" name="result" value="9">9
+	</p>
+
+	<input type="button" onClick="clearCan();" value="クリア" style="width:100;height:30;" data-inline="true"/>
+	<input type="button" onClick="saveCanvas('can');clearCan();" value="保存" style="width:100;height:30;" data-inline="true"/>
+</div>
+</body>
+</html>
