@@ -14,7 +14,8 @@ from keras.utils.np_utils import to_categorical
 
 img_save_path = 'image_input'
 mnist_save_path = 'image_mnist'
-model_path = 'model\\mnist_self.h5'
+# model_path = 'model\\mnist_self.h5'
+model_path = 'model\\eulerlcs_ann.h5'
 
 model = load_model(model_path)
 graph = tf.get_default_graph()
@@ -43,25 +44,31 @@ def conver_to_mnist(convas_jpg):
 
     img_gray.save(os.path.join(img_save_path, '{}_input_minist_gray.png'.format(rdint)))
 
-    # 行列を1次元に変換する(28, 28) -> (1, 784) にする。
-    data = np.array(img_gray).reshape(1, -1)
+    # 行列を1次元に変換する(28, 28) -> (28, 28, 1) にする。
+    data = np.array(img_gray).reshape(28, 28, 1)
     mnist_data = 255 - data
 
     img_mnist = Image.fromarray(mnist_data.reshape(28, -1))
     img_mnist.save(os.path.join(img_save_path, '{}_input_minist_gray_2.png'.format(rdint)))
 
-    if model_path == 'model\\mnist_net.h5':
-        mnist_data = data.reshape(1, 28, 28, 1)
-    else:
-        mnist_data = mnist_data / 255
 
     return mnist_data
 
 
-def predict(img):
+def predict(mnist_data):
+    if model_path == 'model\\mnist_net.h5':
+        mnist_data = 255 - mnist_data
+        mnist_data = mnist_data.reshape(1, 28, 28, 1)
+    elif model_path == 'model\\eulerlcs_ann.h5':
+        mnist_data = mnist_data.astype('float32') / 255
+        mnist_data = mnist_data.reshape(1, -1)
+    elif model_path == 'model\\eulerlcs_cnn.h5':
+        mnist_data = mnist_data.astype('float32') / 255
+        mnist_data = mnist_data.reshape(1, 28, 28, 1)
+
     global graph
     with graph.as_default():
-        score = model.predict(img)
+        score = model.predict(mnist_data)
         result = score.argmax()
 
     score = np.around(score, 2)
