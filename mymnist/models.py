@@ -15,7 +15,7 @@ from keras.utils.np_utils import to_categorical
 img_save_path = 'image_input'
 mnist_save_path = 'image_mnist'
 # model_path = 'model\\mnist_self.h5'
-model_path = 'model\\eulerlcs_ann.h5'
+model_path = 'model\\eulerlcs_cnn.h5'
 
 model = load_model(model_path)
 graph = tf.get_default_graph()
